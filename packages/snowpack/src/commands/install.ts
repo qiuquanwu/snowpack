@@ -10,12 +10,11 @@ import fs from 'fs';
 import * as colors from 'kleur/colors';
 import mkdirp from 'mkdirp';
 import path from 'path';
-import pino from 'pino';
 import {performance} from 'perf_hooks';
 import rimraf from 'rimraf';
 import {InputOptions, OutputOptions, rollup, RollupError} from 'rollup';
 import validatePackageName from 'validate-npm-package-name';
-import createLogger from '../logger';
+import logger from '../logger';
 import {resolveTargetsFromRemoteCDN} from '../resolve-remote.js';
 import {rollupPluginCatchUnresolved} from '../rollup-plugins/rollup-plugin-catch-unresolved.js';
 import {rollupPluginCatchFetch} from '../rollup-plugins/rollup-plugin-catch-fetch';
@@ -44,8 +43,6 @@ import {
   isPackageAliasEntry,
   findMatchingAliasEntry,
 } from '../util.js';
-
-const logger = createLogger({name: 'snowpack'});
 
 type InstallResultCode = 'SUCCESS' | 'ASSET' | 'FAIL';
 
@@ -239,7 +236,6 @@ function resolveWebDependency(dep: string): DependencyLoc {
 interface InstallOptions {
   lockfile: ImportMap | null;
   config: SnowpackConfig;
-  logLevel?: pino.Level;
 }
 
 type InstallResult = {success: false; importMap: null} | {success: true; importMap: ImportMap};
@@ -493,10 +489,7 @@ export async function getInstallTargets(
 }
 
 export async function command(commandOptions: CommandOptions) {
-  const {cwd, config, logLevel = 'info'} = commandOptions;
-
-  // adjust logging level
-  logger.level = logLevel;
+  const {cwd, config} = commandOptions;
 
   const installTargets = await getInstallTargets(config);
   if (installTargets.length === 0) {
@@ -532,15 +525,11 @@ export async function run({
   config,
   lockfile,
   installTargets,
-  logLevel = 'info',
 }: InstallRunOptions): Promise<InstallRunResult> {
   const {
     installOptions: {dest},
     webDependencies,
   } = config;
-
-  // adjust logging level
-  logger.level = logLevel;
 
   // start
   const installStart = performance.now();
@@ -571,7 +560,6 @@ export async function run({
   const finalResult = await install(installTargets, {
     lockfile: newLockfile,
     config,
-    logLevel,
   }).catch((err) => {
     if (err.loc) {
       logger.error(colors.red(colors.bold(`✘ ${err.loc.file}`)));
