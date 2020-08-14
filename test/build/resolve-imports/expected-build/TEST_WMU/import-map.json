@@ -1,6 +1,7 @@
 {
   "imports": {
     "aliased-dep": "./array-flatten.js",
-    "array-flatten": "./array-flatten.js"
+    "array-flatten": "./array-flatten.js",
+    "bootstrap/dist/css/bootstrap.min.css": "./bootstrap/dist/css/bootstrap.min.css"
   }
 }

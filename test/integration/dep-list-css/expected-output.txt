@@ -2,4 +2,5 @@
 [snowpack] ✔ install complete
 [snowpack]
   ⦿ web_modules/          size       gzip       brotli   
-    └─ css-mock-pkg-a.js    XXXX KB    XXXX KB    XXXX KB
+    ├─ css-mock-pkg-a.js    XXXX KB    XXXX KB    XXXX KB
+    └─ css-mock-pkg-b.js    XXXX KB    XXXX KB    XXXX KB

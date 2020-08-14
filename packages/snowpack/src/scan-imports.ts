@@ -8,7 +8,14 @@ import stripComments from 'strip-comments';
 import validatePackageName from 'validate-npm-package-name';
 import {InstallTarget, SnowpackConfig, SnowpackSourceFile} from './types/snowpack';
 import createLogger from './logger';
-import {findMatchingAliasEntry, getExt, HTML_JS_REGEX, isTruthy, SVELTE_VUE_REGEX} from './util';
+import {
+  findMatchingAliasEntry,
+  getExt,
+  HTML_JS_REGEX,
+  isTruthy,
+  SVELTE_VUE_REGEX,
+  CSS_REGEX,
+} from './util';
 
 const WEB_MODULES_TOKEN = 'web_modules/';
 const WEB_MODULES_TOKEN_LENGTH = WEB_MODULES_TOKEN.length;
@@ -141,40 +148,58 @@ function cleanCodeForParsing(code: string): string {
   return allMatches.map(([full]) => full).join('\n');
 }
 
-function parseCodeForInstallTargets({
-  locOnDisk,
-  baseExt,
-  contents,
-}: SnowpackSourceFile): InstallTarget[] {
+function parseJsForInstallTargets(contents: string): InstallTarget[] {
   let imports: ImportSpecifier[];
   // Attempt #1: Parse the file as JavaScript. JSX and some decorator
   // syntax will break this.
   try {
-    if (baseExt === '.jsx' || baseExt === '.tsx') {
-      // We know ahead of time that this will almost certainly fail.
-      // Just jump right to the secondary attempt.
-      throw new Error('JSX must be cleaned before parsing');
-    }
     [imports] = parse(contents) || [];
   } catch (err) {
     // Attempt #2: Parse only the import statements themselves.
     // This lets us guarentee we aren't sending any broken syntax to our parser,
     // but at the expense of possible false +/- caused by our regex extractor.
-    try {
-      contents = cleanCodeForParsing(contents);
-      [imports] = parse(contents) || [];
-    } catch (err) {
-      // Another error! No hope left, just abort.
-      logger.fatal(`! ${locOnDisk}`);
-      throw err;
+    contents = cleanCodeForParsing(contents);
+    [imports] = parse(contents) || [];
+  }
+  return (
+    imports
+      .map((imp) => parseImportStatement(contents, imp))
+      .filter(isTruthy)
+      // Babel macros are not install targets!
+      .filter((target) => !/[./]macro(\.js)?$/.test(target.specifier))
+  );
+}
+
+function parseCssForInstallTargets(code: string): InstallTarget[] {
+  const installTargets: InstallTarget[] = [];
+  let match;
+  const importRegex = new RegExp(CSS_REGEX);
+  while ((match = importRegex.exec(code))) {
+    const [, spec] = match;
+    const webModuleSpecifier = parseWebModuleSpecifier(spec);
+    if (webModuleSpecifier) {
+      installTargets.push(createInstallTarget(webModuleSpecifier));
     }
   }
-  const allImports: InstallTarget[] = imports
-    .map((imp) => parseImportStatement(contents, imp))
-    .filter(isTruthy)
-    // Babel macros are not install targets!
-    .filter((imp) => !/[./]macro(\.js)?$/.test(imp.specifier));
-  return allImports;
+  return installTargets;
+}
+
+function parseFileForInstallTargets({
+  locOnDisk,
+  baseExt,
+  contents,
+}: SnowpackSourceFile): InstallTarget[] {
+  try {
+    if (baseExt === '.css' || baseExt === '.scss' || baseExt === '.sass' || baseExt === '.less') {
+      return parseCssForInstallTargets(contents);
+    } else {
+      return parseJsForInstallTargets(contents);
+    }
+  } catch (err) {
+    // Another error! No hope left, just abort.
+    logger.fatal(`! ${locOnDisk}`);
+    throw err;
+  }
 }
 
 export function scanDepList(depList: string[], cwd: string): InstallTarget[] {
@@ -227,6 +252,10 @@ export async function scanImports(cwd: string, config: SnowpackConfig): Promise<
         case '.jsx':
         case '.mjs':
         case '.ts':
+        case '.css':
+        case '.sass':
+        case '.scss':
+        case '.less':
         case '.tsx': {
           return {
             baseExt,
@@ -284,7 +313,7 @@ export async function scanImportsFromFiles(
   config: SnowpackConfig,
 ): Promise<InstallTarget[]> {
   return loadedFiles
-    .map(parseCodeForInstallTargets)
+    .map(parseFileForInstallTargets)
     .reduce((flat, item) => flat.concat(item), [])
     .filter((target) => {
       const aliasEntry = findMatchingAliasEntry(config, target.specifier);

@@ -26,6 +26,7 @@
   },
   "dependencies": {
     "array-flatten": "^3.0.0",
-    "snowpack": "^2.7.0"
+    "snowpack": "^2.7.0",
+    "bootstrap": "^4.5.2"
   }
 }
