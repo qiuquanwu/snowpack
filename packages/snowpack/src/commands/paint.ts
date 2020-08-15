@@ -18,7 +18,6 @@ export const paintEvent = {
   WORKER_UPDATE: 'WORKER_UPDATE',
 };
 
-const MAX_CONSOLE_LENGTH = 500;
 /**
  * Get the actual port, based on the `defaultPort`.
  * If the default port was not available, then we'll prompt the user if its okay
@@ -111,13 +110,7 @@ export function paint(bus: EventEmitter, plugins: string[]) {
       process.stdout.write(colors.dim(`  Server starting…`) + '\n\n');
     }
     // Console Output
-    let history = logger.getHistory();
-    if (history.length > MAX_CONSOLE_LENGTH) {
-      history = [
-        colors.dim('<Previous messages trimmed>'),
-        ...history.slice(history.length - MAX_CONSOLE_LENGTH),
-      ];
-    }
+    const history = logger.getHistory();
     if (history.length) {
       process.stdout.write(`${colors.underline(colors.bold('▼ Console'))}\n\n`);
       process.stdout.write(history.join('\n'));
@@ -174,6 +167,7 @@ export function paint(bus: EventEmitter, plugins: string[]) {
     repaint();
   });
 
+  // replace logging behavior with repaint (note: messages are retrieved later, with logger.getHistory())
   logger.on('debug', () => {
     repaint();
   });

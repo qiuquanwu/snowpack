@@ -161,7 +161,7 @@ function expandCliFlags(flags: CLIFlags): DeepPartial<SnowpackConfig> {
   };
   const {help, version, reload, config, ...relevantFlags} = flags;
 
-  const CLI_ONLY_FLAGS = ['logLevel', 'debug', 'silent'];
+  const CLI_ONLY_FLAGS = ['quiet', 'verbose'];
 
   for (const [flag, val] of Object.entries(relevantFlags)) {
     if (flag === '_' || flag.includes('-')) {

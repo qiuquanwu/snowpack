@@ -190,6 +190,18 @@ export async function command(commandOptions: CommandOptions) {
   }
 
   const messageBus = new EventEmitter();
+
+  // note: this would cause an infinite loop if not for the logger.on(…) in `paint.ts`.
+  console.log = (...args) => {
+    logger.info(args[0]);
+  };
+  console.warn = (...args) => {
+    logger.warn(args[0]);
+  };
+  console.error = (...args) => {
+    logger.error(args[0]);
+  };
+
   paint(
     messageBus,
     config.plugins.map((p) => p.name),
