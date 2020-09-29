@@ -1,0 +1,75 @@
+#### 谁在使用snowpack？
+
+<div class="company-logos">
+{% for user in usersList %}
+  <a href="{{ user.url }}" target="_blank">
+    {% if user.img %}<img class="company-logo" src="{{ user.img }}" alt="{{ user.name }}" />
+    {% else %}<span>{{ user.name }}</span>
+    {% endif %}
+  </a>
+{% endfor %}
+<a href="https://github.com/pikapkg/snowpack/edit/master/docs/docs/00.md" target="_blank" title="Add Your Project/Company!" class="add-company-button">
+  <svg style="height: 22px; margin-right: 8px;" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="plus" class="company-logo" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M416 208H272V64c0-17.67-14.33-32-32-32h-32c-17.67 0-32 14.33-32 32v144H32c-17.67 0-32 14.33-32 32v32c0 17.67 14.33 32 32 32h144v144c0 17.67 14.33 32 32 32h32c17.67 0 32-14.33 32-32V304h144c17.67 0 32-14.33 32-32v-32c0-17.67-14.33-32-32-32z"></path></svg>
+  添加您的标记
+</a>
+</div>
+
+## 概览
+
+### 什么是 Snowpack？
+
+**积雪是一个现代的、轻量级的工具链，用于更快的网页开发。 ** 传统的 JavaScript 构建工具，例如webpack 和Parcel需要在每次保存单个文件时重新构建 & 并打包整个应用程序的chunk。 这个重新构建的步骤在保存您的更改时和在浏览器中查看它们之间出现延迟。
+
+Snowpack 在开发过程中为您的应用程序**不进行打包。** 每个文件只需要构建一次，然后被永久缓存。 当文件更改时，Snowpack 重新构建了这个单一文件。 每次更改都没有浪费时间，只需在浏览器中实时更新(通过[热模块替换(HMR)](#hot-module-replacement)实现更快)。 您可以在我们的[Snowpack 2.0 Release Post.](/posts/2020-05-26-snowpack-2-0-release/)阅读更多关于这种方法的信息
+
+Snowpack**不打包开发**仍然支持你在生产环境使用**打包构建**。 当您去构建您的生产应用程序时， 您可以通过 Webpack 或 Rollup 的官方Snowpack 插件插入您最喜欢的打包程序(即将推出)。 Snowpack 已经在处理你的构建，不需要复杂的打包配置。
+
+**Snowpack给你带来了两个世界上最好的东西：** 快速、非打包开发，并优化了你打包后生产环境的性能。
+
+### 关键特性
+
+- 启动一个前端开发环境的时间只需要50ms甚至更少。
+- 浏览器实时刷新。
+- 支持将您最喜欢的打包工具集成到[生产优化版本。](/#snowpack-build)
+- 支持[TypeScript、JSX、CSS 模块及更多。](/#features)
+- 支持使用[第三方插件连接您最喜欢的工具。](/#build-plugins)
+
+### 库支持
+
+<div class="grid-list">
+
+- React
+- Preact
+- Svelte
+- Vue
+- lit-html
+- lit-element
+- Styled Components
+- Tailwide CSS
+- 更多!
+<!-- Missing something? Feel free to add your own! -->
+
+</div>
+
+### 配套支持
+
+<div class="grid-list">
+
+- Babel
+- TypeScript
+- PostCSS
+- Sass
+- esbuild
+- 11ty
+- 更多！
+<!-- Missing something? Feel free to add your own! -->
+
+</div>
+
+### 浏览器支持
+
+**Snowpack 为现代和旧版浏览器构建您的网站。 甚至支持 IE11 。** 你可以通过
+
+"浏览器列表"包.json property</1"控制和自定义这种行为。 </p> 
+
+唯一的要求是开发过程中需要**你使用[更新的浏览器](http://caniuse.com/#feat=es6-module)。 任何最近发布的 Firefox、Chrome 或 Edge 都可以。 浏览器中加载您的应用的要求支持bundle-free ESM导入。
